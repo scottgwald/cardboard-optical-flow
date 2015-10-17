@@ -20,24 +20,15 @@ canvas {
     width: 100%;
 }
 
-#localVideo {
+#leftEye {
     top: 30%;
     left: 6%;
     /* -5% is proper offset for cardboard v1 and nexus 4*/
     height: 50%;
 }
 
-#localVideo2 {
+#rightEye {
     top: 30%;
     left: 56%;
     height: 50%;
-}
-
-#ar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
 }
