@@ -1,0 +1,43 @@
+body {
+    margin: 0;
+}
+
+video {
+    position: absolute;
+    height: 100%;
+    z-index: 0;
+}
+
+canvas {
+    position: absolute;
+    z-index: 1;
+}
+
+#videos {
+    position: absolute;
+    background-color: black;
+    min-height: 100vh;
+    width: 100%;
+}
+
+#localVideo {
+    top: 30%;
+    left: 6%;
+    /* -5% is proper offset for cardboard v1 and nexus 4*/
+    height: 50%;
+}
+
+#localVideo2 {
+    top: 30%;
+    left: 56%;
+    height: 50%;
+}
+
+#ar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+}
