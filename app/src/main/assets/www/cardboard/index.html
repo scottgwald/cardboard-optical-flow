@@ -9,6 +9,7 @@
     <video id="rightEye" autoplay muted></video>
     <canvas id="leftCanvas" width=275 height=206></canvas>
     <canvas id="rightCanvas" width=275 height=206></canvas>
+    <canvas id="lowerCanvas" width=275 height=206></canvas>
   </div>
 
     <script src="js/three.min.js"></script>
@@ -20,8 +21,10 @@
     var righteye = $("#rightEye");
     var leftcanvas = $("#leftCanvas");
     var rightcanvas = $("#rightCanvas");
+    var lowercanvas = $("#lowerCanvas");
     var leftcontext = leftcanvas[0].getContext('2d');
     var rightcontext = rightcanvas[0].getContext('2d');
+    var lowercontext = lowercanvas[0].getContext('2d');
 
       // find rear facing camera
       MediaStreamTrack.getSources(gotSources);
@@ -92,9 +95,8 @@
         requestAnimationFrame(tick);
 
         if (lefteye[0].readyState === lefteye[0].HAVE_ENOUGH_DATA) {
-            leftcontext.drawImage(lefteye[0], 0, 0, lefteye.width(), lefteye.height());
-            rightcontext.drawImage(lefteye[0], 0, 0, lefteye.width(), lefteye.height());
-            var imageData = leftcontext.getImageData(0, 0, lefteye.width(), lefteye.height());
+            lowercontext.drawImage(lefteye[0], 0, 0, lefteye.width(), lefteye.height());
+            var imageData = lowercontext.getImageData(0, 0, lefteye.width(), lefteye.height());
 
             // swap flow data
             var _pt_xy = prev_xy;
@@ -110,6 +112,8 @@
 
             jsfeat.optical_flow_lk.track(prev_img_pyr, curr_img_pyr, prev_xy, curr_xy, point_count, options.win_size|0, options.max_iterations|0, point_status, options.epsilon, options.min_eigen);
 
+            leftcontext.clearRect(0,0,275,206);
+            rightcontext.clearRect(0,0,275,206);
             prune_oflow_points(leftcontext);
             prune_oflow_points(rightcontext);
         }
