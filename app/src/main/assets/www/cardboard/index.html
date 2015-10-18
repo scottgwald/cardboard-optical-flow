@@ -25,6 +25,17 @@
     var leftcontext = leftcanvas[0].getContext('2d');
     var rightcontext = rightcanvas[0].getContext('2d');
     var lowercontext = lowercanvas[0].getContext('2d');
+    var drawings = [];
+
+    loadEmojis();
+
+    function loadEmojis(){
+      for (var i = 0; i < 8; i++){
+        drawings[i] = new Image();
+        drawings[i].src = "media/" + (i+1) + ".png";
+      }
+      console.log("fdsa");
+    }
 
       // find rear facing camera
       MediaStreamTrack.getSources(gotSources);
@@ -66,6 +77,7 @@
       }
 
       var curr_img_pyr, prev_img_pyr, point_count, point_status, prev_xy, curr_xy;
+      var point_count_rands = [];
       var options = {
         win_size: 20,
         max_iterations: 30,
@@ -114,6 +126,8 @@
 
             leftcontext.clearRect(0,0,275,206);
             rightcontext.clearRect(0,0,275,206);
+            draw_x(leftcontext, leftcanvas.width()/2, leftcanvas.height()/2);
+            draw_x(rightcontext, leftcanvas.width()/2, leftcanvas.height()/2)
             prune_oflow_points(leftcontext);
             prune_oflow_points(rightcontext);
         }
@@ -127,15 +141,23 @@
         if(coords.x > 0 & coords.y > 0 & coords.x < leftcanvas.width() & coords.y < leftcanvas.height()) {
             curr_xy[point_count<<1] = coords.x;
             curr_xy[(point_count<<1)+1] = coords.y;
+            var rand =  Math.ceil(Math.random() * 8);
+            point_count_rands.push(rand);
             point_count++;
         }
     }
 
-    function draw_circle(ctx, x, y) {
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI*2, true); 
-        ctx.closePath();
-        ctx.fill();
+    function draw_circle(ctx, x, y, i) {
+        // ctx.beginPath();
+        // ctx.arc(x, y, 4, 0, Math.PI*2, true); 
+        // ctx.closePath();
+        // ctx.fill();
+        ctx.drawImage(drawings[point_count_rands[i]],x-32,y-32);
+    }
+
+    function draw_x(ctx, x, y) {
+        ctx.font = "4px Arial";
+        ctx.fillText("x",x-2,y+4);
     }
 
     function prune_oflow_points(ctx) {
@@ -148,7 +170,7 @@
                     curr_xy[j<<1] = curr_xy[i<<1];
                     curr_xy[(j<<1)+1] = curr_xy[(i<<1)+1];
                 }
-                draw_circle(ctx, curr_xy[j<<1], curr_xy[(j<<1)+1]);
+                draw_circle(ctx, curr_xy[j<<1], curr_xy[(j<<1)+1], i);
                 ++j;
             }
         }
