@@ -74,6 +74,6 @@ public class MainActivity extends CardboardActivity {
     @Override
     public void onCardboardTrigger() {
         Log.i(TAG, "onCardboardTrigger");
-        mWebView.loadUrl("javascript:console.log('cardboardTrigger')");
+        mWebView.loadUrl("javascript:console.log('cardboardTrigger'); onClick()");
     }
 }

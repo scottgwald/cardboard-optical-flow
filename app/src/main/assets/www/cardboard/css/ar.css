@@ -23,11 +23,22 @@ canvas {
 #leftEye {
     top: 30%;
     left: 6%;
-    /* -5% is proper offset for cardboard v1 and nexus 4*/
     height: 50%;
 }
 
 #rightEye {
+    top: 30%;
+    left: 56%;
+    height: 50%;
+}
+
+#leftCanvas {
+    top: 30%;
+    left: 6%;
+    height: 50%;
+}
+
+#rightCanvas {
     top: 30%;
     left: 56%;
     height: 50%;
