@@ -1,0 +1,51 @@
+body {
+    margin: 0;
+}
+
+video {
+    position: absolute;
+    height: 100%;
+    z-index: 0;
+}
+
+canvas {
+    position: absolute;
+    z-index: 1;
+}
+
+#videos {
+    position: absolute;
+    background-color: black;
+    min-height: 100vh;
+    width: 100%;
+}
+
+#leftEye {
+    top: 30%;
+    left: 6%;
+    height: 50%;
+}
+
+#rightEye {
+    top: 30%;
+    left: 56%;
+    height: 50%;
+}
+
+#leftCanvas {
+    top: 30%;
+    left: 6%;
+    height: 50%;
+}
+
+#rightCanvas {
+    top: 30%;
+    left: 56%;
+    height: 50%;
+}
+
+#lowerCanvas {
+    top: 100%;
+    left: 6%;
+    height: 50%;
+}

@@ -1,0 +1,184 @@
+
+<html>
+  <head>
+    <title>VRhackathon</title>
+  </head>
+  <body>
+  <div id="videos">
+    <video id="leftEye" autoplay muted></video>
+    <video id="rightEye" autoplay muted></video>
+    <canvas id="leftCanvas" width=275 height=206></canvas>
+    <canvas id="rightCanvas" width=275 height=206></canvas>
+    <canvas id="lowerCanvas" width=275 height=206></canvas>
+  </div>
+
+    <script src="js/three.min.js"></script>
+    <script src="js/jquery-1.11.3.min.js"></script>
+    <script src="js/jsfeat-min.js"></script>
+    <script>
+
+    var lefteye = $("#leftEye");
+    var righteye = $("#rightEye");
+    var leftcanvas = $("#leftCanvas");
+    var rightcanvas = $("#rightCanvas");
+    var lowercanvas = $("#lowerCanvas");
+    var leftcontext = leftcanvas[0].getContext('2d');
+    var rightcontext = rightcanvas[0].getContext('2d');
+    var lowercontext = lowercanvas[0].getContext('2d');
+    var drawings = [];
+
+    loadEmojis();
+
+    function loadEmojis(){
+      for (var i = 0; i < 8; i++){
+        drawings[i] = new Image();
+        drawings[i].src = "media/" + (i+1) + ".png";
+      }
+      console.log("fdsa");
+    }
+
+      // find rear facing camera
+      MediaStreamTrack.getSources(gotSources);
+
+      function gotSources(sourceInfos) {
+        var videoId;
+        for (var i = 0; i < sourceInfos.length; i++) {
+          var sourceInfo = sourceInfos[i];
+          if (sourceInfo.kind == 'video' && sourceInfo.facing == 'environment'){
+              videoId = sourceInfo.id;
+          }
+        }
+
+      var constraints = {
+        audio: true,
+        video: {
+            optional: [{sourceId: videoId}]
+        }
+      };
+
+      navigator.webkitGetUserMedia(constraints, handleUserMediaSuccess, handleUserMediaError);
+    }
+
+      // attach to video elements
+      function handleUserMediaSuccess(stream) {
+        console.log("Successfully got local video stream!");
+        attachMediaStream = function(element, stream) {
+          element.src = window.URL.createObjectURL(stream);
+        };
+        attachMediaStream(lefteye[0], stream);
+        attachMediaStream(righteye[0], stream);
+
+        demo_app();
+        tick();
+      }
+
+      function handleUserMediaError(error) {
+        alert("getUserMedia error: ", error);
+      }
+
+      var curr_img_pyr, prev_img_pyr, point_count, point_status, prev_xy, curr_xy;
+      var point_count_rands = [];
+      var options = {
+        win_size: 20,
+        max_iterations: 30,
+        epsilon: 0.01,
+        min_eigen: 0.001
+      }
+
+      function demo_app() {
+
+        leftcontext.fillStyle = "rgb(0,255,0)";
+        leftcontext.strokeStyle = "rgb(0,255,0)";
+        rightcontext.fillStyle = "rgb(0,255,0)";
+        rightcontext.strokeStyle = "rgb(0,255,0)";
+
+        curr_img_pyr = new jsfeat.pyramid_t(3);
+        prev_img_pyr = new jsfeat.pyramid_t(3);
+        curr_img_pyr.allocate(640, 480, jsfeat.U8_t|jsfeat.C1_t);
+        prev_img_pyr.allocate(640, 480, jsfeat.U8_t|jsfeat.C1_t);
+
+        point_count = 0;
+        point_status = new Uint8Array(100);
+        prev_xy = new Float32Array(100*2);
+        curr_xy = new Float32Array(100*2);
+      }
+
+      function tick() {
+        requestAnimationFrame(tick);
+
+        if (lefteye[0].readyState === lefteye[0].HAVE_ENOUGH_DATA) {
+            lowercontext.drawImage(lefteye[0], 0, 0, lefteye.width(), lefteye.height());
+            var imageData = lowercontext.getImageData(0, 0, lefteye.width(), lefteye.height());
+
+            // swap flow data
+            var _pt_xy = prev_xy;
+            prev_xy = curr_xy;
+            curr_xy = _pt_xy;
+            var _pyr = prev_img_pyr;
+            prev_img_pyr = curr_img_pyr;
+            curr_img_pyr = _pyr;
+
+            jsfeat.imgproc.grayscale(imageData.data, leftcanvas.width(), leftcanvas.height(), curr_img_pyr.data[0]);
+
+            curr_img_pyr.build(curr_img_pyr.data[0], true);
+
+            jsfeat.optical_flow_lk.track(prev_img_pyr, curr_img_pyr, prev_xy, curr_xy, point_count, options.win_size|0, options.max_iterations|0, point_status, options.epsilon, options.min_eigen);
+
+            leftcontext.clearRect(0,0,275,206);
+            rightcontext.clearRect(0,0,275,206);
+            draw_x(leftcontext, leftcanvas.width()/2, leftcanvas.height()/2);
+            draw_x(rightcontext, leftcanvas.width()/2, leftcanvas.height()/2)
+            prune_oflow_points(leftcontext);
+            prune_oflow_points(rightcontext);
+        }
+    }
+
+    function onClick() {
+        var coords = {
+          x: leftcanvas.width()/2,
+          y: leftcanvas.height()/2
+        };
+        if(coords.x > 0 & coords.y > 0 & coords.x < leftcanvas.width() & coords.y < leftcanvas.height()) {
+            curr_xy[point_count<<1] = coords.x;
+            curr_xy[(point_count<<1)+1] = coords.y;
+            var rand =  Math.ceil(Math.random() * 8);
+            point_count_rands.push(rand);
+            point_count++;
+        }
+    }
+
+    function draw_circle(ctx, x, y, i) {
+        // ctx.beginPath();
+        // ctx.arc(x, y, 4, 0, Math.PI*2, true); 
+        // ctx.closePath();
+        // ctx.fill();
+        ctx.drawImage(drawings[point_count_rands[i]],x-20,y-20,40,40);
+    }
+
+    function draw_x(ctx, x, y) {
+        ctx.font = "4px Arial";
+        ctx.fillText("x",x-2,y+4);
+    }
+
+    function prune_oflow_points(ctx) {
+        var n = point_count;
+        var i=0,j=0;
+
+        for(; i < n; ++i) {
+            if(point_status[i] == 1) {
+                if(j < i) {
+                    curr_xy[j<<1] = curr_xy[i<<1];
+                    curr_xy[(j<<1)+1] = curr_xy[(i<<1)+1];
+                }
+                draw_circle(ctx, curr_xy[j<<1], curr_xy[(j<<1)+1], i);
+                ++j;
+            }
+        }
+        point_count = j;
+    }
+
+
+    </script>
+  <link rel=stylesheet href="css/ar.css"/>
+  </body>
+</html>
