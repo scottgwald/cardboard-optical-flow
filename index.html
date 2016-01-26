@@ -134,6 +134,7 @@
     }
 
     function onClick() {
+        console.log("Yay, a click.");
         var coords = {
           x: leftcanvas.width()/2,
           y: leftcanvas.height()/2
@@ -176,8 +177,7 @@
         }
         point_count = j;
     }
-
-
+    document.onclick = onClick;
     </script>
   <link rel=stylesheet href="css/ar.css"/>
   </body>
